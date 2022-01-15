@@ -27,6 +27,8 @@ func (s *notesSrv) Create(ctx context.Context, note *domain.Note) error {
 		return err
 	}
 
+	s.coordinatorService.Trigger(ctx, service.TriggerNoteCreated, note)
+
 	return nil
 }
 
@@ -36,6 +38,8 @@ func (s *notesSrv) Update(ctx context.Context, ID string, note *domain.Note) err
 	if err := s.notesRepository.Update(ctx, ID, note, tagNames); err != nil {
 		return err
 	}
+
+	s.coordinatorService.Trigger(ctx, service.TriggerNoteUpdated, note)
 
 	return nil
 }
@@ -54,10 +58,17 @@ func (s *notesSrv) parseTagNames(ctx context.Context, content string) []string {
 }
 
 func (s *notesSrv) Delete(ctx context.Context, ID string) error {
-	err := s.notesRepository.Delete(ctx, ID)
+	note, err := s.notesRepository.Get(ctx, ID)
 	if err != nil {
 		return err
 	}
+
+	err = s.notesRepository.Delete(ctx, ID)
+	if err != nil {
+		return err
+	}
+
+	s.coordinatorService.Trigger(ctx, service.TriggerNoteDeleted, note)
 
 	return nil
 }

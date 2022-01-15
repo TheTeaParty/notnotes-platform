@@ -31,6 +31,12 @@ type Error struct {
 	Message string                 `json:"message"`
 }
 
+// Event defines model for Event.
+type Event struct {
+	Data interface{} `json:"data"`
+	Type string      `json:"type"`
+}
+
 // Note defines model for Note.
 type Note struct {
 	Content   string    `json:"content"`
@@ -81,6 +87,9 @@ type UpdateNoteJSONRequestBody UpdateNoteJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Get Events
+	// (GET /events)
+	GetEvents(w http.ResponseWriter, r *http.Request)
 	// Get Nots
 	// (GET /notes)
 	GetNotes(w http.ResponseWriter, r *http.Request, params GetNotesParams)
@@ -109,6 +118,21 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.HandlerFunc) http.HandlerFunc
+
+// GetEvents operation middleware
+func (siw *ServerInterfaceWrapper) GetEvents(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var handler = func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetEvents(w, r)
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler(w, r.WithContext(ctx))
+}
 
 // GetNotes operation middleware
 func (siw *ServerInterfaceWrapper) GetNotes(w http.ResponseWriter, r *http.Request) {
@@ -390,6 +414,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/events", wrapper.GetEvents)
+	})
+	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/notes", wrapper.GetNotes)
 	})
 	r.Group(func(r chi.Router) {
@@ -414,19 +441,20 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

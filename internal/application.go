@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/TheTeaParty/notnotes-platform/internal/config"
+	"github.com/TheTeaParty/notnotes-platform/internal/handler/ws"
 	v1 "github.com/TheTeaParty/notnotes-platform/pkg/api/openapi"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -12,12 +13,13 @@ import (
 )
 
 type Application struct {
-	r http.Handler
-	c *config.Config
-	l *zap.Logger
+	r  http.Handler
+	ws *ws.WSHandler
+	c  *config.Config
+	l  *zap.Logger
 }
 
-func NewApplication(restHandler v1.ServerInterface, c *config.Config, l *zap.Logger) (*Application, error) {
+func NewApplication(restHandler v1.ServerInterface, c *config.Config, l *zap.Logger, ws *ws.WSHandler) (*Application, error) {
 
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
@@ -32,10 +34,13 @@ func NewApplication(restHandler v1.ServerInterface, c *config.Config, l *zap.Log
 	h := v1.HandlerFromMux(restHandler, r)
 	r.Mount("/", h)
 
+	r.HandleFunc("/ws", ws.ServeWs)
+
 	return &Application{
-		r: r,
-		c: c,
-		l: l,
+		r:  r,
+		c:  c,
+		l:  l,
+		ws: ws,
 	}, nil
 }
 

@@ -4,12 +4,13 @@
 package internal
 
 import (
-	"github.com/TheTeaParty/notnotes-platform/internal/domain/tag"
 	"github.com/google/wire"
 
 	"github.com/TheTeaParty/notnotes-platform/internal/config"
 	"github.com/TheTeaParty/notnotes-platform/internal/domain/note"
+	"github.com/TheTeaParty/notnotes-platform/internal/domain/tag"
 	"github.com/TheTeaParty/notnotes-platform/internal/handler/rest"
+	"github.com/TheTeaParty/notnotes-platform/internal/handler/ws"
 	"github.com/TheTeaParty/notnotes-platform/internal/pkg/logger"
 	"github.com/TheTeaParty/notnotes-platform/internal/pkg/nats"
 	"github.com/TheTeaParty/notnotes-platform/internal/pkg/pg"
@@ -33,6 +34,7 @@ func InitializeApplication() (*Application, error) {
 		coordinator.NewNATS,
 
 		rest.NewRESTV1Handler,
+		ws.NewWSHandler,
 
 		NewApplication,
 	)

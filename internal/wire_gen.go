@@ -11,6 +11,7 @@ import (
 	"github.com/TheTeaParty/notnotes-platform/internal/domain/note"
 	"github.com/TheTeaParty/notnotes-platform/internal/domain/tag"
 	"github.com/TheTeaParty/notnotes-platform/internal/handler/rest"
+	"github.com/TheTeaParty/notnotes-platform/internal/handler/ws"
 	"github.com/TheTeaParty/notnotes-platform/internal/pkg/logger"
 	"github.com/TheTeaParty/notnotes-platform/internal/pkg/nats"
 	"github.com/TheTeaParty/notnotes-platform/internal/pkg/pg"
@@ -41,7 +42,8 @@ func InitializeApplication() (*Application, error) {
 	serviceNotes := notes.NewSrv(noteRepository, tagRepository, zapLogger, serviceCoordinator)
 	serviceTags := tags.NewSrv(tagRepository, zapLogger)
 	serverInterface := rest.NewRESTV1Handler(serviceNotes, serviceTags)
-	application, err := NewApplication(serverInterface, configConfig, zapLogger)
+	wsHandler := ws.NewWSHandler(zapLogger, serviceCoordinator)
+	application, err := NewApplication(serverInterface, configConfig, zapLogger, wsHandler)
 	if err != nil {
 		return nil, err
 	}

@@ -6,6 +6,19 @@ info:
 servers:
   - url: 'https://api.example.com'
 paths:
+  /events:
+    get:
+      summary: Get Events
+      operationId: getEvents
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
   /tags:
     get:
       summary: Get Tags
@@ -149,6 +162,18 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
   schemas:
+    Event:
+      type: object
+      required:
+        - data
+        - type
+      properties:
+        data:
+          anyOf:
+            - $ref: '#/components/schemas/Note'
+            - $ref: '#/components/schemas/Tag'
+        type:
+          type: string
     Error:
       type: object
       required:

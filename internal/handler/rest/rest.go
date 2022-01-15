@@ -14,17 +14,27 @@ type restV1Handler struct {
 	tagsService  service.Tags
 }
 
+func (h *restV1Handler) GetEvents(w http.ResponseWriter, r *http.Request) {
+	return
+}
+
 func (h *restV1Handler) GetNotes(w http.ResponseWriter, r *http.Request, params v1.GetNotesParams) {
 
 	var name string
-	var tagNames []string
+	tagNames := make([]string, 0)
 
 	if params.Name != nil {
 		name = *params.Name
 	}
 
 	if params.Tags != nil {
-		tagNames = *params.Tags
+		for _, t := range *params.Tags {
+			if t == "" {
+				continue
+			}
+
+			tagNames = append(tagNames, t)
+		}
 	}
 
 	notes, err := h.notesService.GetMatching(r.Context(), name, tagNames)
